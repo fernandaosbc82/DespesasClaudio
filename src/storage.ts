@@ -29,6 +29,16 @@ export function removerDespesa(id: string): Despesa[] {
   return restantes;
 }
 
+export function buscarDespesaPorId(id: string): Despesa | undefined {
+  return carregarDespesas().find((d) => d.id === id);
+}
+
+export function atualizarDespesa(despesa: Despesa): Despesa[] {
+  const atualizadas = carregarDespesas().map((d) => (d.id === despesa.id ? despesa : d));
+  salvarDespesas(atualizadas);
+  return atualizadas;
+}
+
 const CHAVE_PRECOS = 'precos-combustivel-mes';
 
 export function carregarPrecosCombustivel(): Record<string, number> {

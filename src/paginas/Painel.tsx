@@ -151,6 +151,14 @@ export default function Painel() {
                 <button
                   type="button"
                   className="botao-excluir"
+                  aria-label="Editar gasto"
+                  onClick={() => navigate(`/editar/${d.id}`)}
+                >
+                  ✏️
+                </button>
+                <button
+                  type="button"
+                  className="botao-excluir"
                   aria-label="Excluir gasto"
                   onClick={() => aoExcluir(d.id)}
                 >

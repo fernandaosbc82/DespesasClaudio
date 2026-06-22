@@ -9,6 +9,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Inicio />} />
         <Route path="/novo" element={<NovoGasto />} />
+        <Route path="/editar/:id" element={<NovoGasto />} />
         <Route path="/painel" element={<Painel />} />
       </Routes>
     </HashRouter>

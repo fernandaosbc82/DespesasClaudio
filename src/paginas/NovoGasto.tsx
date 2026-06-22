@@ -1,11 +1,13 @@
-import { useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import Topo from '../components/Topo';
 import { lerComprovante } from '../ocr';
-import { adicionarDespesa } from '../storage';
+import { adicionarDespesa, atualizarDespesa, buscarDespesaPorId } from '../storage';
 
 export default function NovoGasto() {
   const navigate = useNavigate();
+  const { id } = useParams();
+  const emEdicao = Boolean(id);
   const inputFotoRef = useRef<HTMLInputElement>(null);
   const inputAnexoRef = useRef<HTMLInputElement>(null);
 
@@ -13,6 +15,7 @@ export default function NovoGasto() {
   const [lendoFoto, setLendoFoto] = useState(false);
   const [progresso, setProgresso] = useState(0);
   const [erro, setErro] = useState('');
+  const [criadoEm, setCriadoEm] = useState<string | null>(null);
 
   const [data, setData] = useState(() => new Date().toISOString().slice(0, 10));
   const [cliente, setCliente] = useState('');
@@ -21,6 +24,23 @@ export default function NovoGasto() {
 
   const [mostrarOpcionais, setMostrarOpcionais] = useState(false);
   const [observacoes, setObservacoes] = useState('');
+
+  useEffect(() => {
+    if (!id) return;
+    const despesa = buscarDespesaPorId(id);
+    if (!despesa) {
+      navigate('/painel');
+      return;
+    }
+    setData(despesa.data);
+    setCliente(despesa.cliente ?? '');
+    setValor(despesa.valor.toFixed(2).replace('.', ','));
+    setKmRodado(despesa.kmRodado !== undefined ? String(despesa.kmRodado).replace('.', ',') : '');
+    setObservacoes(despesa.observacoes ?? '');
+    setImagem(despesa.imagem ?? null);
+    setCriadoEm(despesa.criadoEm);
+    if (despesa.observacoes) setMostrarOpcionais(true);
+  }, [id, navigate]);
 
   async function aoEscolherFoto(arquivo: File) {
     setErro('');
@@ -62,22 +82,27 @@ export default function NovoGasto() {
       return;
     }
     const kmRodadoNumerico = kmRodado.trim() ? parseFloat(kmRodado.replace(',', '.')) : NaN;
-    adicionarDespesa({
-      id: crypto.randomUUID(),
+    const despesa = {
+      id: id ?? crypto.randomUUID(),
       valor: valorNumerico,
       data,
       imagem: imagem ?? undefined,
-      criadoEm: new Date().toISOString(),
+      criadoEm: criadoEm ?? new Date().toISOString(),
       kmRodado: isNaN(kmRodadoNumerico) ? undefined : kmRodadoNumerico,
       cliente: cliente.trim() || undefined,
       observacoes: observacoes.trim() || undefined,
-    });
+    };
+    if (emEdicao) {
+      atualizarDespesa(despesa);
+    } else {
+      adicionarDespesa(despesa);
+    }
     navigate('/painel');
   }
 
   return (
     <>
-      <Topo titulo="Novo Gasto" mostrarVoltar />
+      <Topo titulo={emEdicao ? 'Editar Gasto' : 'Novo Gasto'} mostrarVoltar />
       <main className="conteudo">
         {!imagem && (
           <div className="grupo-botoes-foto">
@@ -216,7 +241,7 @@ export default function NovoGasto() {
           onClick={aoSalvar}
           style={{ marginTop: '0.3rem' }}
         >
-          Salvar Gasto
+          {emEdicao ? 'Salvar Alterações' : 'Salvar Gasto'}
         </button>
       </main>
     </>
