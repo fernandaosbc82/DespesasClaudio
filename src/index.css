@@ -7,9 +7,6 @@
   --cor-borda: #c9c9c9;
   --cor-erro: #b3261e;
   --cor-cartao: #ffffff;
-  --cor-combustivel: #d97706;
-  --cor-alimentacao: #1a5e2a;
-  --cor-outros: #4b5563;
 }
 
 * {
@@ -233,10 +230,6 @@ input:focus, select:focus, button:focus {
   background: var(--cor-primaria);
 }
 
-.linha-total.combustivel { background: var(--cor-combustivel); }
-.linha-total.alimentacao { background: var(--cor-alimentacao); }
-.linha-total.outros { background: var(--cor-outros); }
-
 .item-despesa {
   display: flex;
   justify-content: space-between;
@@ -254,20 +247,6 @@ input:focus, select:focus, button:focus {
   font-size: 1.05rem;
   color: #444;
 }
-
-.selo-tipo {
-  display: inline-block;
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: white;
-  padding: 0.15rem 0.6rem;
-  border-radius: 1rem;
-  margin-top: 0.3rem;
-}
-
-.selo-tipo.combustivel { background: var(--cor-combustivel); }
-.selo-tipo.alimentacao { background: var(--cor-alimentacao); }
-.selo-tipo.outros { background: var(--cor-outros); }
 
 .valor-despesa {
   font-size: 1.4rem;

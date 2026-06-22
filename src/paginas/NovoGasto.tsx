@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import Topo from '../components/Topo';
 import { lerComprovante } from '../ocr';
 import { adicionarDespesa } from '../storage';
-import type { TipoDespesa } from '../types';
-import { TIPO_LABEL } from '../types';
 
 export default function NovoGasto() {
   const navigate = useNavigate();
@@ -16,13 +14,12 @@ export default function NovoGasto() {
   const [progresso, setProgresso] = useState(0);
   const [erro, setErro] = useState('');
 
-  const [tipo, setTipo] = useState<TipoDespesa>('outros');
-  const [valor, setValor] = useState('');
   const [data, setData] = useState(() => new Date().toISOString().slice(0, 10));
+  const [cliente, setCliente] = useState('');
+  const [valor, setValor] = useState('');
+  const [kmRodado, setKmRodado] = useState('');
 
   const [mostrarOpcionais, setMostrarOpcionais] = useState(false);
-  const [kmRodado, setKmRodado] = useState('');
-  const [cliente, setCliente] = useState('');
   const [observacoes, setObservacoes] = useState('');
 
   async function aoEscolherFoto(arquivo: File) {
@@ -67,7 +64,6 @@ export default function NovoGasto() {
     const kmRodadoNumerico = kmRodado.trim() ? parseFloat(kmRodado.replace(',', '.')) : NaN;
     adicionarDespesa({
       id: crypto.randomUUID(),
-      tipo,
       valor: valorNumerico,
       data,
       imagem: imagem ?? undefined,
@@ -149,16 +145,24 @@ export default function NovoGasto() {
         )}
 
         <div className="cartao">
-          <label htmlFor="tipo">Tipo de Gasto</label>
-          <select id="tipo" value={tipo} onChange={(e) => setTipo(e.target.value as TipoDespesa)}>
-            {Object.entries(TIPO_LABEL).map(([valorTipo, rotulo]) => (
-              <option key={valorTipo} value={valorTipo}>
-                {rotulo}
-              </option>
-            ))}
-          </select>
+          <label htmlFor="data">Data da Compra</label>
+          <input
+            id="data"
+            type="date"
+            value={data}
+            onChange={(e) => setData(e.target.value)}
+          />
 
-          <label htmlFor="valor">Valor (R$)</label>
+          <label htmlFor="cliente">Cliente</label>
+          <input
+            id="cliente"
+            type="text"
+            value={cliente}
+            onChange={(e) => setCliente(e.target.value)}
+            placeholder="Ex: Empresa ABC"
+          />
+
+          <label htmlFor="valor">Valor Gasto (R$)</label>
           <input
             id="valor"
             type="text"
@@ -168,12 +172,14 @@ export default function NovoGasto() {
             placeholder="Ex: 150,00"
           />
 
-          <label htmlFor="data">Data da Compra</label>
+          <label htmlFor="kmRodado">Km Rodado</label>
           <input
-            id="data"
-            type="date"
-            value={data}
-            onChange={(e) => setData(e.target.value)}
+            id="kmRodado"
+            type="text"
+            inputMode="decimal"
+            value={kmRodado}
+            onChange={(e) => setKmRodado(e.target.value)}
+            placeholder="Ex: 150"
           />
 
           {erro && <p className="erro-texto">{erro}</p>}
@@ -192,25 +198,6 @@ export default function NovoGasto() {
         {mostrarOpcionais && (
           <div className="cartao">
             <h2 style={{ marginTop: 0 }}>Informações Opcionais</h2>
-
-            <label htmlFor="kmRodado">Km Rodado</label>
-            <input
-              id="kmRodado"
-              type="text"
-              inputMode="decimal"
-              value={kmRodado}
-              onChange={(e) => setKmRodado(e.target.value)}
-              placeholder="Ex: 150"
-            />
-
-            <label htmlFor="cliente">Cliente</label>
-            <input
-              id="cliente"
-              type="text"
-              value={cliente}
-              onChange={(e) => setCliente(e.target.value)}
-              placeholder="Ex: Empresa ABC"
-            />
 
             <label htmlFor="observacoes">Observações</label>
             <input

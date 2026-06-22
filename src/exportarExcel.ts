@@ -1,6 +1,5 @@
 import * as XLSX from 'xlsx';
 import type { Despesa } from './types';
-import { TIPO_LABEL } from './types';
 
 const KM_POR_LITRO = 10;
 
@@ -13,11 +12,10 @@ export function exportarParaExcel(
     const precoMedio = precosCombustivel[mes];
     return {
       Data: formatarDataBr(d.data),
-      Tipo: TIPO_LABEL[d.tipo],
-      'Valor (R$)': d.valor,
+      Cliente: d.cliente ?? '',
+      'Valor Gasto (R$)': d.valor,
       'Km Rodado': d.kmRodado ?? '',
       'Valor médio gasolina': precoMedio ?? '',
-      Cliente: d.cliente ?? '',
       Observações: d.observacoes ?? '',
     };
   });
@@ -25,11 +23,10 @@ export function exportarParaExcel(
   const planilha = XLSX.utils.json_to_sheet(linhas);
   planilha['!cols'] = [
     { wch: 12 },
-    { wch: 16 },
+    { wch: 25 },
     { wch: 14 },
     { wch: 12 },
     { wch: 18 },
-    { wch: 25 },
     { wch: 40 },
   ];
 
@@ -40,7 +37,7 @@ export function exportarParaExcel(
   if (resumoMensal.length > 0) {
     const planilhaResumo = XLSX.utils.json_to_sheet(resumoMensal);
     planilhaResumo['!cols'] = [
-      { wch: 12 },
+      { wch: 14 },
       { wch: 14 },
       { wch: 18 },
       { wch: 18 },
@@ -66,13 +63,22 @@ function montarResumoMensal(despesas: Despesa[], precosCombustivel: Record<strin
       const precoMedio = precosCombustivel[mes];
       const gastoEstimado = precoMedio ? litrosEstimados * precoMedio : '';
       return {
-        Mês: mes,
+        Mês: formatarMes(mes),
         'Km Rodado': kmTotal,
         'Litros Estimados': Number(litrosEstimados.toFixed(2)),
         'Valor médio gasolina': precoMedio ?? '',
         'Gasto Estimado Combustível': gastoEstimado,
       };
     });
+}
+
+function formatarMes(mes: string): string {
+  const [ano, mesNum] = mes.split('-');
+  const nomes = [
+    'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+    'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
+  ];
+  return `${nomes[Number(mesNum) - 1]}/${ano}`;
 }
 
 function formatarDataBr(isoData: string): string {

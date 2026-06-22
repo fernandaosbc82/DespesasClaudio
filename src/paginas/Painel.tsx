@@ -8,8 +8,7 @@ import {
   salvarPrecoCombustivelMes,
 } from '../storage';
 import { exportarParaExcel } from '../exportarExcel';
-import type { Despesa, TipoDespesa } from '../types';
-import { TIPO_LABEL } from '../types';
+import type { Despesa } from '../types';
 
 const KM_POR_LITRO = 10;
 
@@ -23,19 +22,10 @@ export default function Painel() {
     setPrecosCombustivel(carregarPrecosCombustivel());
   }, []);
 
-  const totais = useMemo(() => {
-    const porTipo: Record<TipoDespesa, number> = {
-      combustivel: 0,
-      alimentacao: 0,
-      outros: 0,
-    };
-    let geral = 0;
-    for (const d of despesas) {
-      porTipo[d.tipo] += d.valor;
-      geral += d.valor;
-    }
-    return { porTipo, geral };
-  }, [despesas]);
+  const totalGeral = useMemo(
+    () => despesas.reduce((soma, d) => soma + d.valor, 0),
+    [despesas],
+  );
 
   const resumoMensal = useMemo(() => {
     const porMes = new Map<string, number>();
@@ -95,19 +85,7 @@ export default function Painel() {
         <div className="resumo-totais">
           <div className="linha-total geral">
             <span>Total Geral</span>
-            <span>{formatarValor(totais.geral)}</span>
-          </div>
-          <div className="linha-total combustivel">
-            <span>{TIPO_LABEL.combustivel}</span>
-            <span>{formatarValor(totais.porTipo.combustivel)}</span>
-          </div>
-          <div className="linha-total alimentacao">
-            <span>{TIPO_LABEL.alimentacao}</span>
-            <span>{formatarValor(totais.porTipo.alimentacao)}</span>
-          </div>
-          <div className="linha-total outros">
-            <span>{TIPO_LABEL.outros}</span>
-            <span>{formatarValor(totais.porTipo.outros)}</span>
+            <span>{formatarValor(totalGeral)}</span>
           </div>
         </div>
 
@@ -164,13 +142,12 @@ export default function Painel() {
             <div className="cartao item-despesa" key={d.id}>
               <div className="info">
                 <h3>{formatarDataBr(d.data)}</h3>
-                <span className={`selo-tipo ${d.tipo}`}>{TIPO_LABEL[d.tipo]}</span>
                 {d.cliente && <p>Cliente: {d.cliente}</p>}
+                <p className="valor-despesa">{formatarValor(d.valor)}</p>
                 {d.kmRodado !== undefined && <p>Km rodado: {d.kmRodado}</p>}
                 {d.observacoes && <p>Obs: {d.observacoes}</p>}
               </div>
               <div style={{ textAlign: 'right' }}>
-                <p className="valor-despesa">{formatarValor(d.valor)}</p>
                 <button
                   type="button"
                   className="botao-excluir"
