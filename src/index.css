@@ -36,6 +36,26 @@ body {
   flex-direction: column;
 }
 
+@media (min-width: 900px) {
+  #root {
+    max-width: 1000px;
+    box-shadow: 0 0 24px rgba(0, 0, 0, 0.08);
+  }
+
+  .conteudo {
+    padding: 1.6rem 2rem 3rem;
+  }
+
+  .grupo-botoes-foto {
+    flex-direction: row;
+  }
+
+  .grupo-botoes-foto .botao-grande,
+  .grupo-botoes-foto .botao-acao {
+    margin-bottom: 0;
+  }
+}
+
 h1 {
   font-size: 2.1rem;
   margin: 0;
@@ -274,4 +294,36 @@ input:focus, select:focus, button:focus {
   color: var(--cor-erro);
   font-size: 1.1rem;
   margin-top: 0.6rem;
+}
+
+.grupo-botoes-foto {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.resumo-mes {
+  border-top: 2px solid var(--cor-borda);
+  padding-top: 0.8rem;
+  margin-top: 0.8rem;
+}
+
+.resumo-mes:first-of-type {
+  border-top: none;
+  padding-top: 0;
+  margin-top: 0;
+}
+
+.resumo-mes h3 {
+  margin: 0 0 0.3rem;
+  font-size: 1.2rem;
+}
+
+.resumo-mes p {
+  margin: 0.2rem 0;
+}
+
+.gasto-estimado {
+  font-weight: 700;
+  color: var(--cor-primaria);
 }

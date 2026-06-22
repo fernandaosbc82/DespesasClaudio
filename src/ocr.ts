@@ -1,9 +1,6 @@
 import { createWorker } from 'tesseract.js';
-import type { TipoDespesa } from './types';
 
 export interface DadosExtraidos {
-  estabelecimento: string;
-  tipo: TipoDespesa;
   valor: number | null;
   data: string | null; // ISO yyyy-mm-dd
   textoCompleto: string;
@@ -26,29 +23,6 @@ export async function lerComprovante(
   } finally {
     await worker.terminate();
   }
-}
-
-const PALAVRAS_COMBUSTIVEL = [
-  'posto', 'combustivel', 'combustível', 'gasolina', 'etanol', 'alcool',
-  'álcool', 'diesel', 'gnv', 'gas natural', 'litro', 'litros', 'shell',
-  'ipiranga', 'petrobras', 'br distribuidora', 'ale combustiveis',
-];
-
-const PALAVRAS_ALIMENTACAO = [
-  'restaurante', 'lanchonete', 'padaria', 'mercado', 'supermercado',
-  'alimentos', 'churrascaria', 'pizzaria', 'cafe', 'café', 'bar',
-  'refeicao', 'refeição', 'self service', 'self-service', 'buffet',
-  'pastelaria', 'sorveteria', 'hamburgueria', 'açai', 'acai',
-];
-
-function identificarTipo(textoMinusculo: string): TipoDespesa {
-  if (PALAVRAS_COMBUSTIVEL.some((p) => textoMinusculo.includes(p))) {
-    return 'combustivel';
-  }
-  if (PALAVRAS_ALIMENTACAO.some((p) => textoMinusculo.includes(p))) {
-    return 'alimentacao';
-  }
-  return 'outros';
 }
 
 function extrairData(texto: string): string | null {
@@ -89,26 +63,8 @@ function paraNumero(valorTexto: string): number {
   return parseFloat(limpo);
 }
 
-function extrairEstabelecimento(texto: string): string {
-  const linhas = texto
-    .split('\n')
-    .map((l) => l.trim())
-    .filter((l) => l.length > 2);
-
-  for (const linha of linhas) {
-    const apenasLetras = linha.replace(/[^a-zA-ZÀ-ÿ\s]/g, '').trim();
-    if (apenasLetras.length >= 3 && apenasLetras.length / linha.length > 0.5) {
-      return linha.slice(0, 60);
-    }
-  }
-  return linhas[0]?.slice(0, 60) ?? '';
-}
-
 function interpretarTexto(texto: string): DadosExtraidos {
-  const textoMinusculo = texto.toLowerCase();
   return {
-    estabelecimento: extrairEstabelecimento(texto),
-    tipo: identificarTipo(textoMinusculo),
     valor: extrairValor(texto),
     data: extrairData(texto),
     textoCompleto: texto,

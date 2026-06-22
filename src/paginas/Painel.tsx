@@ -1,17 +1,26 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Topo from '../components/Topo';
-import { carregarDespesas, removerDespesa } from '../storage';
+import {
+  carregarDespesas,
+  carregarPrecosCombustivel,
+  removerDespesa,
+  salvarPrecoCombustivelMes,
+} from '../storage';
 import { exportarParaExcel } from '../exportarExcel';
 import type { Despesa, TipoDespesa } from '../types';
 import { TIPO_LABEL } from '../types';
 
+const KM_POR_LITRO = 10;
+
 export default function Painel() {
   const navigate = useNavigate();
   const [despesas, setDespesas] = useState<Despesa[]>([]);
+  const [precosCombustivel, setPrecosCombustivel] = useState<Record<string, number>>({});
 
   useEffect(() => {
     setDespesas(carregarDespesas());
+    setPrecosCombustivel(carregarPrecosCombustivel());
   }, []);
 
   const totais = useMemo(() => {
@@ -28,6 +37,22 @@ export default function Painel() {
     return { porTipo, geral };
   }, [despesas]);
 
+  const resumoMensal = useMemo(() => {
+    const porMes = new Map<string, number>();
+    for (const d of despesas) {
+      const mes = d.data.slice(0, 7);
+      porMes.set(mes, (porMes.get(mes) ?? 0) + (d.kmRodado ?? 0));
+    }
+    return [...porMes.entries()]
+      .sort((a, b) => (a[0] < b[0] ? 1 : -1))
+      .map(([mes, kmTotal]) => {
+        const litrosEstimados = kmTotal / KM_POR_LITRO;
+        const precoMedio = precosCombustivel[mes];
+        const gastoEstimado = precoMedio ? litrosEstimados * precoMedio : null;
+        return { mes, kmTotal, litrosEstimados, precoMedio, gastoEstimado };
+      });
+  }, [despesas, precosCombustivel]);
+
   const despesasOrdenadas = useMemo(
     () => [...despesas].sort((a, b) => (a.data < b.data ? 1 : -1)),
     [despesas],
@@ -39,6 +64,12 @@ export default function Painel() {
     setDespesas(removerDespesa(id));
   }
 
+  function aoMudarPrecoCombustivel(mes: string, valorTexto: string) {
+    const valor = parseFloat(valorTexto.replace(',', '.'));
+    if (isNaN(valor) || valor < 0) return;
+    setPrecosCombustivel(salvarPrecoCombustivelMes(mes, valor));
+  }
+
   function formatarValor(valor: number) {
     return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   }
@@ -46,6 +77,15 @@ export default function Painel() {
   function formatarDataBr(isoData: string) {
     const [ano, mes, dia] = isoData.split('-');
     return `${dia}/${mes}/${ano}`;
+  }
+
+  function formatarMes(mes: string) {
+    const [ano, mesNum] = mes.split('-');
+    const nomes = [
+      'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+      'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
+    ];
+    return `${nomes[Number(mesNum) - 1]}/${ano}`;
   }
 
   return (
@@ -71,11 +111,38 @@ export default function Painel() {
           </div>
         </div>
 
+        {resumoMensal.length > 0 && (
+          <div className="cartao">
+            <h2 style={{ marginTop: 0 }}>Resumo Mensal de Km Rodado</h2>
+            {resumoMensal.map(({ mes, kmTotal, litrosEstimados, precoMedio, gastoEstimado }) => (
+              <div className="resumo-mes" key={mes}>
+                <h3>{formatarMes(mes)}</h3>
+                <p>Km rodado: {kmTotal.toLocaleString('pt-BR')} km</p>
+                <p>Consumo estimado ({KM_POR_LITRO} km/l): {litrosEstimados.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} litros</p>
+                <label htmlFor={`preco-${mes}`}>Valor médio pago por litro de combustível (R$)</label>
+                <input
+                  id={`preco-${mes}`}
+                  type="text"
+                  inputMode="decimal"
+                  defaultValue={precoMedio !== undefined ? String(precoMedio).replace('.', ',') : ''}
+                  onBlur={(e) => aoMudarPrecoCombustivel(mes, e.target.value)}
+                  placeholder="Ex: 6,15"
+                />
+                {gastoEstimado !== null && (
+                  <p className="gasto-estimado">
+                    Gasto estimado com combustível: {formatarValor(gastoEstimado)}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
         <button
           type="button"
           className="botao-acao principal"
           disabled={despesas.length === 0}
-          onClick={() => exportarParaExcel(despesas)}
+          onClick={() => exportarParaExcel(despesas, precosCombustivel)}
           style={{ marginBottom: '1.2rem' }}
         >
           📥 Exportar para Excel
@@ -96,15 +163,10 @@ export default function Painel() {
           despesasOrdenadas.map((d) => (
             <div className="cartao item-despesa" key={d.id}>
               <div className="info">
-                <h3>{d.estabelecimento}</h3>
-                <p>{formatarDataBr(d.data)}</p>
+                <h3>{formatarDataBr(d.data)}</h3>
                 <span className={`selo-tipo ${d.tipo}`}>{TIPO_LABEL[d.tipo]}</span>
                 {d.cliente && <p>Cliente: {d.cliente}</p>}
-                {(d.kmInicio !== undefined || d.kmFinal !== undefined) && (
-                  <p>
-                    Km: {d.kmInicio ?? '—'} a {d.kmFinal ?? '—'}
-                  </p>
-                )}
+                {d.kmRodado !== undefined && <p>Km rodado: {d.kmRodado}</p>}
                 {d.observacoes && <p>Obs: {d.observacoes}</p>}
               </div>
               <div style={{ textAlign: 'right' }}>

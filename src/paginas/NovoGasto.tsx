@@ -9,20 +9,19 @@ import { TIPO_LABEL } from '../types';
 export default function NovoGasto() {
   const navigate = useNavigate();
   const inputFotoRef = useRef<HTMLInputElement>(null);
+  const inputAnexoRef = useRef<HTMLInputElement>(null);
 
   const [imagem, setImagem] = useState<string | null>(null);
   const [lendoFoto, setLendoFoto] = useState(false);
   const [progresso, setProgresso] = useState(0);
   const [erro, setErro] = useState('');
 
-  const [estabelecimento, setEstabelecimento] = useState('');
   const [tipo, setTipo] = useState<TipoDespesa>('outros');
   const [valor, setValor] = useState('');
   const [data, setData] = useState(() => new Date().toISOString().slice(0, 10));
 
   const [mostrarOpcionais, setMostrarOpcionais] = useState(false);
-  const [kmInicio, setKmInicio] = useState('');
-  const [kmFinal, setKmFinal] = useState('');
+  const [kmRodado, setKmRodado] = useState('');
   const [cliente, setCliente] = useState('');
   const [observacoes, setObservacoes] = useState('');
 
@@ -36,11 +35,9 @@ export default function NovoGasto() {
       setProgresso(0);
       try {
         const dados = await lerComprovante(urlImagem, setProgresso);
-        setEstabelecimento(dados.estabelecimento || '');
-        setTipo(dados.tipo);
         if (dados.valor !== null) setValor(dados.valor.toFixed(2).replace('.', ','));
         if (dados.data) setData(dados.data);
-        if (!dados.estabelecimento && dados.valor === null && !dados.data) {
+        if (dados.valor === null && !dados.data) {
           setErro('Não conseguimos ler todos os dados. Por favor, confira e complete abaixo.');
         }
       } catch {
@@ -59,10 +56,6 @@ export default function NovoGasto() {
 
   function aoSalvar() {
     const valorNumerico = parseFloat(valor.replace(',', '.'));
-    if (!estabelecimento.trim()) {
-      setErro('Informe o nome do estabelecimento.');
-      return;
-    }
     if (isNaN(valorNumerico) || valorNumerico <= 0) {
       setErro('Informe um valor válido.');
       return;
@@ -71,18 +64,15 @@ export default function NovoGasto() {
       setErro('Informe a data da compra.');
       return;
     }
-    const kmInicioNumerico = kmInicio.trim() ? parseFloat(kmInicio.replace(',', '.')) : NaN;
-    const kmFinalNumerico = kmFinal.trim() ? parseFloat(kmFinal.replace(',', '.')) : NaN;
+    const kmRodadoNumerico = kmRodado.trim() ? parseFloat(kmRodado.replace(',', '.')) : NaN;
     adicionarDespesa({
       id: crypto.randomUUID(),
-      estabelecimento: estabelecimento.trim(),
       tipo,
       valor: valorNumerico,
       data,
       imagem: imagem ?? undefined,
       criadoEm: new Date().toISOString(),
-      kmInicio: isNaN(kmInicioNumerico) ? undefined : kmInicioNumerico,
-      kmFinal: isNaN(kmFinalNumerico) ? undefined : kmFinalNumerico,
+      kmRodado: isNaN(kmRodadoNumerico) ? undefined : kmRodadoNumerico,
       cliente: cliente.trim() || undefined,
       observacoes: observacoes.trim() || undefined,
     });
@@ -94,14 +84,24 @@ export default function NovoGasto() {
       <Topo titulo="Novo Gasto" mostrarVoltar />
       <main className="conteudo">
         {!imagem && (
-          <button
-            type="button"
-            className="botao-grande"
-            onClick={() => inputFotoRef.current?.click()}
-          >
-            <span className="icone">📷</span>
-            Tirar Foto do Comprovante
-          </button>
+          <div className="grupo-botoes-foto">
+            <button
+              type="button"
+              className="botao-grande"
+              onClick={() => inputFotoRef.current?.click()}
+            >
+              <span className="icone">📷</span>
+              Tirar Foto do Comprovante
+            </button>
+            <button
+              type="button"
+              className="botao-grande secundario"
+              onClick={() => inputAnexoRef.current?.click()}
+            >
+              <span className="icone">🖼️</span>
+              Anexar Foto da Galeria
+            </button>
+          </div>
         )}
         <input
           ref={inputFotoRef}
@@ -111,17 +111,33 @@ export default function NovoGasto() {
           style={{ display: 'none' }}
           onChange={aoMudarArquivo}
         />
+        <input
+          ref={inputAnexoRef}
+          type="file"
+          accept="image/*"
+          style={{ display: 'none' }}
+          onChange={aoMudarArquivo}
+        />
 
         {imagem && (
           <div className="cartao">
             <img src={imagem} alt="Comprovante" className="previa-foto" />
-            <button
-              type="button"
-              className="botao-acao"
-              onClick={() => inputFotoRef.current?.click()}
-            >
-              Tirar Outra Foto
-            </button>
+            <div className="grupo-botoes-foto">
+              <button
+                type="button"
+                className="botao-acao"
+                onClick={() => inputFotoRef.current?.click()}
+              >
+                Tirar Outra Foto
+              </button>
+              <button
+                type="button"
+                className="botao-acao"
+                onClick={() => inputAnexoRef.current?.click()}
+              >
+                Anexar Outra Foto
+              </button>
+            </div>
           </div>
         )}
 
@@ -133,15 +149,6 @@ export default function NovoGasto() {
         )}
 
         <div className="cartao">
-          <label htmlFor="estabelecimento">Nome do Estabelecimento</label>
-          <input
-            id="estabelecimento"
-            type="text"
-            value={estabelecimento}
-            onChange={(e) => setEstabelecimento(e.target.value)}
-            placeholder="Ex: Posto Shell"
-          />
-
           <label htmlFor="tipo">Tipo de Gasto</label>
           <select id="tipo" value={tipo} onChange={(e) => setTipo(e.target.value as TipoDespesa)}>
             {Object.entries(TIPO_LABEL).map(([valorTipo, rotulo]) => (
@@ -186,24 +193,14 @@ export default function NovoGasto() {
           <div className="cartao">
             <h2 style={{ marginTop: 0 }}>Informações Opcionais</h2>
 
-            <label htmlFor="kmInicio">Km Início</label>
+            <label htmlFor="kmRodado">Km Rodado</label>
             <input
-              id="kmInicio"
+              id="kmRodado"
               type="text"
               inputMode="decimal"
-              value={kmInicio}
-              onChange={(e) => setKmInicio(e.target.value)}
-              placeholder="Ex: 12000"
-            />
-
-            <label htmlFor="kmFinal">Km Final</label>
-            <input
-              id="kmFinal"
-              type="text"
-              inputMode="decimal"
-              value={kmFinal}
-              onChange={(e) => setKmFinal(e.target.value)}
-              placeholder="Ex: 12150"
+              value={kmRodado}
+              onChange={(e) => setKmRodado(e.target.value)}
+              placeholder="Ex: 150"
             />
 
             <label htmlFor="cliente">Cliente</label>
