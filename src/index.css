@@ -1,0 +1,277 @@
+:root {
+  font-size: 20px;
+  --cor-primaria: #1a5e2a;
+  --cor-primaria-escura: #0f3d1a;
+  --cor-fundo: #fdfcf8;
+  --cor-texto: #1a1a1a;
+  --cor-borda: #c9c9c9;
+  --cor-erro: #b3261e;
+  --cor-cartao: #ffffff;
+  --cor-combustivel: #d97706;
+  --cor-alimentacao: #1a5e2a;
+  --cor-outros: #4b5563;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+  background: var(--cor-fundo);
+  color: var(--cor-texto);
+  line-height: 1.5;
+}
+
+#root {
+  max-width: 700px;
+  margin: 0 auto;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+h1 {
+  font-size: 2.1rem;
+  margin: 0;
+}
+
+h2 {
+  font-size: 1.6rem;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.topo {
+  background: var(--cor-primaria);
+  color: white;
+  padding: 1.2rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.topo button.voltar {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 2rem;
+  line-height: 1;
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.5rem;
+}
+
+.topo button.voltar:active {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.conteudo {
+  flex: 1;
+  padding: 1.2rem 1rem 2.5rem;
+}
+
+.botao-grande {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  font-size: 1.5rem;
+  font-weight: 600;
+  padding: 1.6rem 1.2rem;
+  border-radius: 1rem;
+  border: none;
+  background: var(--cor-primaria);
+  color: white;
+  margin-bottom: 1.2rem;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+}
+
+.botao-grande:active {
+  background: var(--cor-primaria-escura);
+}
+
+.botao-grande.secundario {
+  background: white;
+  color: var(--cor-primaria);
+  border: 3px solid var(--cor-primaria);
+}
+
+.botao-grande .icone {
+  font-size: 2.4rem;
+}
+
+.botao-acao {
+  font-size: 1.25rem;
+  font-weight: 600;
+  padding: 1rem 1.2rem;
+  border-radius: 0.8rem;
+  border: 3px solid var(--cor-primaria);
+  background: white;
+  color: var(--cor-primaria);
+  width: 100%;
+}
+
+.botao-acao.principal {
+  background: var(--cor-primaria);
+  color: white;
+}
+
+.botao-acao:disabled {
+  opacity: 0.5;
+}
+
+label {
+  display: block;
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 1.1rem 0 0.4rem;
+}
+
+input, select {
+  width: 100%;
+  font-size: 1.3rem;
+  padding: 0.7rem 0.6rem;
+  border-radius: 0.6rem;
+  border: 2px solid var(--cor-borda);
+  background: white;
+  color: var(--cor-texto);
+}
+
+input:focus, select:focus, button:focus {
+  outline: 4px solid #8fc9ff;
+}
+
+.cartao {
+  background: var(--cor-cartao);
+  border-radius: 1rem;
+  padding: 1.1rem;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1rem;
+}
+
+.previa-foto {
+  width: 100%;
+  max-height: 320px;
+  object-fit: contain;
+  border-radius: 0.8rem;
+  border: 2px solid var(--cor-borda);
+  margin: 0.8rem 0;
+}
+
+.aviso-ocr {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 1.15rem;
+  color: var(--cor-primaria);
+  margin: 0.8rem 0;
+}
+
+.spinner {
+  width: 1.6rem;
+  height: 1.6rem;
+  border: 4px solid #d4e8d8;
+  border-top-color: var(--cor-primaria);
+  border-radius: 50%;
+  animation: girar 0.8s linear infinite;
+}
+
+@keyframes girar {
+  to { transform: rotate(360deg); }
+}
+
+.resumo-totais {
+  display: grid;
+  gap: 0.7rem;
+  margin-bottom: 1.2rem;
+}
+
+.linha-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1.25rem;
+  padding: 0.9rem 1.1rem;
+  border-radius: 0.8rem;
+  color: white;
+}
+
+.linha-total.geral {
+  font-size: 1.5rem;
+  font-weight: 700;
+  background: var(--cor-primaria);
+}
+
+.linha-total.combustivel { background: var(--cor-combustivel); }
+.linha-total.alimentacao { background: var(--cor-alimentacao); }
+.linha-total.outros { background: var(--cor-outros); }
+
+.item-despesa {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.8rem;
+}
+
+.item-despesa .info h3 {
+  margin: 0 0 0.2rem;
+  font-size: 1.25rem;
+}
+
+.item-despesa .info p {
+  margin: 0.15rem 0;
+  font-size: 1.05rem;
+  color: #444;
+}
+
+.selo-tipo {
+  display: inline-block;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: white;
+  padding: 0.15rem 0.6rem;
+  border-radius: 1rem;
+  margin-top: 0.3rem;
+}
+
+.selo-tipo.combustivel { background: var(--cor-combustivel); }
+.selo-tipo.alimentacao { background: var(--cor-alimentacao); }
+.selo-tipo.outros { background: var(--cor-outros); }
+
+.valor-despesa {
+  font-size: 1.4rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.botao-excluir {
+  background: none;
+  border: none;
+  color: var(--cor-erro);
+  font-size: 1.6rem;
+  padding: 0.3rem;
+}
+
+.mensagem-vazio {
+  text-align: center;
+  color: #555;
+  font-size: 1.2rem;
+  margin-top: 2.5rem;
+}
+
+.erro-texto {
+  color: var(--cor-erro);
+  font-size: 1.1rem;
+  margin-top: 0.6rem;
+}
