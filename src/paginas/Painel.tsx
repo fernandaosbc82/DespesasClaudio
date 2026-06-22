@@ -99,6 +99,13 @@ export default function Painel() {
                 <h3>{d.estabelecimento}</h3>
                 <p>{formatarDataBr(d.data)}</p>
                 <span className={`selo-tipo ${d.tipo}`}>{TIPO_LABEL[d.tipo]}</span>
+                {d.cliente && <p>Cliente: {d.cliente}</p>}
+                {(d.kmInicio !== undefined || d.kmFinal !== undefined) && (
+                  <p>
+                    Km: {d.kmInicio ?? '—'} a {d.kmFinal ?? '—'}
+                  </p>
+                )}
+                {d.observacoes && <p>Obs: {d.observacoes}</p>}
               </div>
               <div style={{ textAlign: 'right' }}>
                 <p className="valor-despesa">{formatarValor(d.valor)}</p>

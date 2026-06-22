@@ -20,6 +20,12 @@ export default function NovoGasto() {
   const [valor, setValor] = useState('');
   const [data, setData] = useState(() => new Date().toISOString().slice(0, 10));
 
+  const [mostrarOpcionais, setMostrarOpcionais] = useState(false);
+  const [kmInicio, setKmInicio] = useState('');
+  const [kmFinal, setKmFinal] = useState('');
+  const [cliente, setCliente] = useState('');
+  const [observacoes, setObservacoes] = useState('');
+
   async function aoEscolherFoto(arquivo: File) {
     setErro('');
     const leitor = new FileReader();
@@ -65,6 +71,8 @@ export default function NovoGasto() {
       setErro('Informe a data da compra.');
       return;
     }
+    const kmInicioNumerico = kmInicio.trim() ? parseFloat(kmInicio.replace(',', '.')) : NaN;
+    const kmFinalNumerico = kmFinal.trim() ? parseFloat(kmFinal.replace(',', '.')) : NaN;
     adicionarDespesa({
       id: crypto.randomUUID(),
       estabelecimento: estabelecimento.trim(),
@@ -73,6 +81,10 @@ export default function NovoGasto() {
       data,
       imagem: imagem ?? undefined,
       criadoEm: new Date().toISOString(),
+      kmInicio: isNaN(kmInicioNumerico) ? undefined : kmInicioNumerico,
+      kmFinal: isNaN(kmFinalNumerico) ? undefined : kmFinalNumerico,
+      cliente: cliente.trim() || undefined,
+      observacoes: observacoes.trim() || undefined,
     });
     navigate('/painel');
   }
@@ -158,13 +170,70 @@ export default function NovoGasto() {
           />
 
           {erro && <p className="erro-texto">{erro}</p>}
-
-          <div style={{ marginTop: '1.3rem' }}>
-            <button type="button" className="botao-acao principal" onClick={aoSalvar}>
-              Salvar Gasto
-            </button>
-          </div>
         </div>
+
+        {!mostrarOpcionais && (
+          <button
+            type="button"
+            className="botao-acao"
+            onClick={() => setMostrarOpcionais(true)}
+          >
+            ➕ Adicionar Mais Informações (opcional)
+          </button>
+        )}
+
+        {mostrarOpcionais && (
+          <div className="cartao">
+            <h2 style={{ marginTop: 0 }}>Informações Opcionais</h2>
+
+            <label htmlFor="kmInicio">Km Início</label>
+            <input
+              id="kmInicio"
+              type="text"
+              inputMode="decimal"
+              value={kmInicio}
+              onChange={(e) => setKmInicio(e.target.value)}
+              placeholder="Ex: 12000"
+            />
+
+            <label htmlFor="kmFinal">Km Final</label>
+            <input
+              id="kmFinal"
+              type="text"
+              inputMode="decimal"
+              value={kmFinal}
+              onChange={(e) => setKmFinal(e.target.value)}
+              placeholder="Ex: 12150"
+            />
+
+            <label htmlFor="cliente">Cliente</label>
+            <input
+              id="cliente"
+              type="text"
+              value={cliente}
+              onChange={(e) => setCliente(e.target.value)}
+              placeholder="Ex: Empresa ABC"
+            />
+
+            <label htmlFor="observacoes">Observações</label>
+            <input
+              id="observacoes"
+              type="text"
+              value={observacoes}
+              onChange={(e) => setObservacoes(e.target.value)}
+              placeholder="Anotações sobre o gasto"
+            />
+          </div>
+        )}
+
+        <button
+          type="button"
+          className="botao-acao principal"
+          onClick={aoSalvar}
+          style={{ marginTop: '0.3rem' }}
+        >
+          Salvar Gasto
+        </button>
       </main>
     </>
   );

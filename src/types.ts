@@ -8,6 +8,10 @@ export interface Despesa {
   data: string; // ISO yyyy-mm-dd
   imagem?: string; // data URL da foto do comprovante
   criadoEm: string; // ISO timestamp
+  kmInicio?: number;
+  kmFinal?: number;
+  cliente?: string;
+  observacoes?: string;
 }
 
 export const TIPO_LABEL: Record<TipoDespesa, string> = {

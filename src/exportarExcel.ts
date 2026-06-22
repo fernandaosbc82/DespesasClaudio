@@ -8,10 +8,23 @@ export function exportarParaExcel(despesas: Despesa[]): void {
     Estabelecimento: d.estabelecimento,
     Tipo: TIPO_LABEL[d.tipo],
     'Valor (R$)': d.valor,
+    'Km Início': d.kmInicio ?? '',
+    'Km Final': d.kmFinal ?? '',
+    Cliente: d.cliente ?? '',
+    Observações: d.observacoes ?? '',
   }));
 
   const planilha = XLSX.utils.json_to_sheet(linhas);
-  planilha['!cols'] = [{ wch: 12 }, { wch: 35 }, { wch: 16 }, { wch: 14 }];
+  planilha['!cols'] = [
+    { wch: 12 },
+    { wch: 35 },
+    { wch: 16 },
+    { wch: 14 },
+    { wch: 12 },
+    { wch: 12 },
+    { wch: 25 },
+    { wch: 40 },
+  ];
 
   const livro = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(livro, planilha, 'Despesas');
